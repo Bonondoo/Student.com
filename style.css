@@ -1,0 +1,183 @@
+/* Reset some default styles for better consistency */
+body, h1, h2 {
+    margin: 0;
+    padding: 0;
+}
+
+/* Basic CSS styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+main {
+    padding: 20px;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+}
+/* Add these CSS styles to your existing style.css file */
+
+/* Reset some default styles for better consistency */
+body, h1, h2 {
+    margin: 0;
+    padding: 0;
+}
+
+/* Basic CSS styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+main {
+    padding: 20px;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Featured Content */
+.featured {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Announcements */
+.announcements {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Student of the Month */
+.student-of-the-month {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Motivational Quotes */
+.quotes {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Upcoming Events */
+.events {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Interactive Quiz */
+.quiz {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Style headings in feature sections */
+.featured h3, .announcements h3, .student-of-the-month h3, .quotes h3, .events h3, .quiz h3 {
+    font-size: 20px;
+    color: #333;
+}
+
+/* Style text content within features */
+.featured p, .announcements p, .student-of-the-month p, .quotes p, .events p, .quiz p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Style interactive buttons */
+button {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 15px 20px;
+    text-decoration: none;
+    display: inline-block;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Center text in buttons */
+button h3, button p {
+    text-align: center;
+}

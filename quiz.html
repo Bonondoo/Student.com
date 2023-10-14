@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Take the Quiz</title>
+    <script src="quiz.js"></script> <!-- Include the JavaScript file -->
+</head>
+<body>
+    <header>
+        <h1>Quiz Page</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="books.html">Books</a></li>
+                <li><a href="interactions.html">Interactions</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Take the Quiz</h2>
+            <p>Test your knowledge with these questions:</p>
+            <ol>
+                <li>
+                    <p>What is the capital of France?</p>
+                    <ul>
+                        <li><input type="radio" name="q1" value="Paris"> Paris</li>
+                        <li><input type="radio" name="q1" value="London"> London</li>
+                        <li><input type="radio" name="q1" value="Madrid"> Madrid</li>
+                    </ul>
+                    <!-- Display the correct answer using JavaScript -->
+                    <p class="correct-answer" id="q1-correct-answer"></p>
+                </li>
+                <!-- Add more quiz questions here -->
+            </ol>
+            <button id="quizSubmitBtn">Submit</button>
+            <div id="quizResult"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 Student Study Platform</p>
+    </footer>
+</body>
+</html>
