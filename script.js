@@ -1,4 +1,4 @@
-// AgriVoice Application Main Script
+// AgriVoice Application Main
 class AgriVoiceApp {
     constructor() {
         this.isListening = false;
