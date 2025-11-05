@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kdeli - Katete District Delivery Service</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary: #e63946;
+            --secondary: #a8dadc;
+            --accent: #457b9d;
+            --dark: #1d3557;
+            --light: #f1faee;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            background: var(--gradient);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+        }
+
+        .logo-text {
+            font-weight: 900;
+            font-size: 1.8rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: 0;
+            left: 0;
+            background: var(--gradient);
+            transition: var(--transition);
+            border-radius: 3px;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-menu {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mobile-menu:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            width: 250px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mobile-nav a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: var(--dark);
+            border-bottom: 1px solid #f0f0f0;
+            transition: var(--transition);
+        }
+
+        .mobile-nav a:hover {
+            background-color: var(--secondary);
+            color: var(--dark);
+            padding-left: 30px;
+        }
+
+        .mobile-nav .auth-buttons {
+            flex-direction: column;
+            padding: 15px 20px;
+            gap: 10px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--light) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: floatBackground 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes floatBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-30px, -30px); }
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            flex: 1;
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            color: var(--dark);
+            opacity: 0.9;
+        }
+
+        .search-container {
+            display: flex;
+            margin-bottom: 30px;
+            max-width: 500px;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 15px rgba(230, 57, 70, 0.2); }
+            50% { box-shadow: 0 4px 20px rgba(230, 57, 70, 0.4); }
+            100% { box-shadow: 0 4px 15px rgba(230, 57, 70, 0.2); }
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            background: var(--primary);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+        }
+
+        .stat {
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .stat:nth-child(1) { animation-delay: 0.2s; }
+        .stat:nth-child(2) { animation-delay: 0.4s; }
+        .stat:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            animation: fadeInRight 0.8s ease-out;
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .hero-img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* Services Section */
+        .services {
+            padding: 100px 0;
+            background-color: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 60px;
+            color: var(--dark);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: var(--gradient);
+            transition: var(--transition);
+            z-index: -1;
+            border-radius: 20px;
+        }
+
+        .service-card:hover::before {
+            height: 100%;
+        }
+
+        .service-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            color: white;
+        }
+
+        .service-card:hover .service-icon {
+            background: white;
+            color: var(--primary);
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .service-card:hover .service-title,
+        .service-card:hover p {
+            color: white;
+        }
+
+        .service-icon {
+            width: 90px;
+            height: 90px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 2.2rem;
+            color: var(--accent);
+            transition: var(--transition);
+        }
+
+        .service-title {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        /* Restaurants Section */
+        .restaurants {
+            padding: 100px 0;
+            background-color: var(--light);
+        }
+
+        .restaurants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .restaurant-card {
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .restaurant-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .restaurant-card:hover::after {
+            opacity: 1;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .restaurant-card:hover .card-img {
+            transform: scale(1.1);
+        }
+
+        .card-content {
+            padding: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .rating {
+            color: #ffc107;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .order-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+        }
+
+        .order-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(230, 57, 70, 0.4);
+        }
+
+        /* Pharmacies Section */
+        .pharmacies {
+            padding: 100px 0;
+            background-color: white;
+        }
+
+        .pharmacies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .pharmacy-card {
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .pharmacy-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .pharmacy-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .pharmacy-card:hover::after {
+            opacity: 1;
+        }
+
+        /* Map Section */
+        .map-section {
+            padding: 100px 0;
+            background-color: white;
+        }
+
+        .map-container {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            height: 500px;
+            position: relative;
+        }
+
+        #katete-map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            max-width: 300px;
+            z-index: 2;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .map-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 0;
+            background-color: var(--light);
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: var(--gradient);
+            z-index: 1;
+            border-radius: 3px;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            padding: 0 15px;
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .step:nth-child(1) { animation-delay: 0.1s; }
+        .step:nth-child(2) { animation-delay: 0.3s; }
+        .step:nth-child(3) { animation-delay: 0.5s; }
+        .step:nth-child(4) { animation-delay: 0.7s; }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 auto 20px;
+            transition: var(--transition);
+            box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 12px 25px rgba(230, 57, 70, 0.4);
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 80px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icon {
+            width: 45px;
+            height: 45px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .social-icon:hover {
+            background: var(--gradient);
+            transform: translateY(-5px) scale(1.1);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: scale(0.8) translateY(-50px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-input {
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Restaurant Detail Section */
+        .restaurant-detail {
+            display: none;
+            padding: 60px 0;
+            background-color: var(--light);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .back-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+        }
+
+        .restaurant-header {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .restaurant-image {
+            flex: 1;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: fadeInLeft 0.6s ease-out;
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .restaurant-image img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .restaurant-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .restaurant-info {
+            flex: 1;
+            animation: fadeInRight 0.6s ease-out;
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .restaurant-name {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .restaurant-category {
+            font-size: 1.4rem;
+            color: var(--accent);
+            margin-bottom: 25px;
+        }
+
+        .restaurant-meta {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .menu-section {
+            margin-bottom: 50px;
+        }
+
+        .menu-title {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            color: var(--dark);
+            text-align: center;
+            position: relative;
+        }
+
+        .menu-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .menu-item {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .menu-item:nth-child(1) { animation-delay: 0.1s; }
+        .menu-item:nth-child(2) { animation-delay: 0.2s; }
+        .menu-item:nth-child(3) { animation-delay: 0.3s; }
+        .menu-item:nth-child(4) { animation-delay: 0.4s; }
+
+        .menu-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .menu-item-name {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .menu-item-desc {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .menu-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-item-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        /* Pharmacy Detail Section */
+        .pharmacy-detail {
+            display: none;
+            padding: 60px 0;
+            background-color: var(--light);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Cart */
+        .cart {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--gradient);
+            color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(230, 57, 70, 0.4);
+            transition: var(--transition);
+            z-index: 100;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .cart:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(230, 57, 70, 0.5);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: white;
+            color: var(--primary);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Map Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .leaflet-popup-content {
+            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .popup-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .popup-desc {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .popup-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+        }
+
+        .popup-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(230, 57, 70, 0.4);
+        }
+
+        /* Search Results */
+        .search-results {
+            padding: 30px 0;
+            background-color: white;
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .results-count {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        /* Cart Modal */
+        .cart-modal-content {
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .cart-items {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .cart-item-remove:hover {
+            transform: scale(1.2);
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 15px 0;
+            border-top: 2px solid #eee;
+        }
+
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-text {
+                margin-bottom: 50px;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .steps {
+                flex-direction: column;
+                gap: 50px;
+            }
+
+            .steps::before {
+                display: none;
+            }
+
+            .restaurant-header {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .auth-buttons {
+                display: none;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .hero-title {
+                font-size: 2.8rem;
+            }
+
+            .section-title {
+                font-size: 2.3rem;
+            }
+
+            .map-overlay {
+                position: relative;
+                top: 0;
+                left: 0;
+                max-width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .cart {
+                width: 60px;
+                height: 60px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="nav-container">
+                <div class="logo" id="logo">
+                    <div class="logo-icon">K</div>
+                    <div class="logo-text">deli</div>
+                </div>
+                <nav class="nav-links">
+                    <a data-section="home">Home</a>
+                    <a data-section="services">Services</a>
+                    <a data-section="restaurants">Restaurants</a>
+                    <a data-section="pharmacies">Pharmacies</a>
+                    <a data-section="map">Coverage Area</a>
+                    <a data-section="how-it-works">How It Works</a>
+                </nav>
+                <div class="auth-buttons">
+                    <button class="btn btn-outline" id="signInBtn">Sign In</button>
+                    <button class="btn btn-primary" id="signUpBtn">Sign Up</button>
+                </div>
+                <div class="mobile-menu" id="mobileMenu">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="mobile-nav" id="mobileNav">
+                    <a data-section="home">Home</a>
+                    <a data-section="services">Services</a>
+                    <a data-section="restaurants">Restaurants</a>
+                    <a data-section="pharmacies">Pharmacies</a>
+                    <a data-section="map">Coverage Area</a>
+                    <a data-section="how-it-works">How It Works</a>
+                    <div class="auth-buttons">
+                        <button class="btn btn-outline" id="mobileSignInBtn">Sign In</button>
+                        <button class="btn btn-primary" id="mobileSignUpBtn">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">Fast Delivery Across Katete District</h1>
+                    <p class="hero-subtitle">From restaurants to pharmacies, we deliver everything you need right to your doorstep anywhere in Katete District.</p>
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="searchInput" placeholder="What are you looking for?">
+                        <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <div class="stat-number">200+</div>
+                            <div>Restaurants</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">15+</div>
+                            <div>Pharmacies</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">15min</div>
+                            <div>Avg. Delivery</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="hero-img" style="background: var(--gradient); display: flex; align-items: center; justify-content: center; color: white;">
+                        <div style="text-align: center; padding: 30px;">
+                            <i class="fas fa-motorcycle" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                            <h3 style="font-size: 1.8rem; margin-bottom: 10px;">Fast Delivery Service</h3>
+                            <p style="font-size: 1.1rem;">Across all Katete District</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <div class="services-grid">
+                <div class="service-card" data-service="food">
+                    <div class="service-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3 class="service-title">Food Delivery</h3>
+                    <p>Order from your favorite restaurants and get meals delivered hot and fresh.</p>
+                </div>
+                <div class="service-card" data-service="grocery">
+                    <div class="service-icon">
+                        <i class="fas fa-shopping-basket"></i>
+                    </div>
+                    <h3 class="service-title">Grocery Delivery</h3>
+                    <p>Get your daily groceries delivered from local markets and shops.</p>
+                </div>
+                <div class="service-card" data-service="pharmacy">
+                    <div class="service-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <h3 class="service-title">Pharmacy</h3>
+                    <p>Essential medicines and health products delivered when you need them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Restaurants Section -->
+    <section class="restaurants" id="restaurants">
+        <div class="container">
+            <h2 class="section-title">Popular Restaurants</h2>
+            <div class="restaurants-grid" id="restaurantsGrid">
+                <!-- Restaurant cards will be generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Pharmacies Section -->
+    <section class="pharmacies" id="pharmacies">
+        <div class="container">
+            <h2 class="section-title">Local Pharmacies</h2>
+            <div class="pharmacies-grid" id="pharmaciesGrid">
+                <!-- Pharmacy cards will be generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section" id="map">
+        <div class="container">
+            <h2 class="section-title">Our Coverage Area</h2>
+            <div class="map-container">
+                <div id="katete-map"></div>
+                <div class="map-overlay">
+                    <h3 class="map-title">Katete District Coverage</h3>
+                    <p class="map-desc">We deliver to all areas within Katete District, including remote villages along all major and minor roads.</p>
+                    <div class="map-controls">
+                        <button class="btn btn-primary" id="satelliteView">Satellite</button>
+                        <button class="btn btn-outline" id="streetView">Street</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Choose</h3>
+                    <p>Browse restaurants and pharmacies in your area</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Order</h3>
+                    <p>Add items to your cart and place your order</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Track</h3>
+                    <p>Follow your order in real-time on the map</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Enjoy</h3>
+                    <p>Receive your delivery at your location</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <div class="logo">
+                        <div class="logo-icon">K</div>
+                        <div class="logo-text">deli</div>
+                    </div>
+                    <p>Fast and reliable delivery service covering all parts of Katete District, Eastern Zambia.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a data-section="home">Home</a></li>
+                        <li><a data-section="services">Services</a></li>
+                        <li><a data-section="restaurants">Restaurants</a></li>
+                        <li><a data-section="pharmacies">Pharmacies</a></li>
+                        <li><a data-section="map">Coverage Area</a></li>
+                        <li><a data-section="how-it-works">How It Works</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> Katete Central, Eastern Zambia</li>
+                        <li><i class="fas fa-phone"></i> +260 123 456 789</li>
+                        <li><i class="fas fa-envelope"></i> info@kdeli.co.zm</li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Business Hours</h3>
+                    <ul class="footer-links">
+                        <li>Monday - Friday: 7am - 10pm</li>
+                        <li>Saturday: 8am - 11pm</li>
+                        <li>Sunday: 9am - 9pm</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 Kdeli - Katete District Delivery Service. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div class="modal" id="signInModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeSignInModal">&times;</span>
+            <h2 class="modal-title">Sign In</h2>
+            <form class="modal-form" id="signInForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" class="form-input" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" class="form-input" id="password" placeholder="Enter your password" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Sign In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="signUpModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeSignUpModal">&times;</span>
+            <h2 class="modal-title">Sign Up</h2>
+            <form class="modal-form" id="signUpForm">
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Full Name</label>
+                    <input type="text" class="form-input" id="fullName" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupEmail">Email</label>
+                    <input type="email" class="form-input" id="signupEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupPassword">Password</label>
+                    <input type="password" class="form-input" id="signupPassword" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm your password" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content cart-modal-content">
+            <span class="close-modal" id="closeCartModal">&times;</span>
+            <h2 class="modal-title">Your Cart</h2>
+            <div class="cart-items" id="cartItems">
+                <!-- Cart items will be generated by JavaScript -->
+            </div>
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotalPrice">ZMW 0.00</span>
+            </div>
+            <div class="cart-actions">
+                <button class="btn btn-outline" id="continueShoppingBtn">Continue Shopping</button>
+                <button class="btn btn-primary" id="placeOrderBtn">Place Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restaurant Detail Section -->
+    <section class="restaurant-detail" id="restaurantDetail">
+        <div class="container">
+            <button class="back-btn" id="backToRestaurants">
+                <i class="fas fa-arrow-left"></i> Back to Restaurants
+            </button>
+            <div class="restaurant-header">
+                <div class="restaurant-image">
+                    <img id="detailImage" src="" alt="Restaurant Image">
+                </div>
+                <div class="restaurant-info">
+                    <h1 class="restaurant-name" id="detailName"></h1>
+                    <p class="restaurant-category" id="detailCategory"></p>
+                    <div class="restaurant-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-star rating"></i>
+                            <span id="detailRating"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span id="detailDeliveryTime"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span id="detailPriceRange"></span>
+                        </div>
+                    </div>
+                    <p id="detailDescription"></p>
+                </div>
+            </div>
+            <div class="menu-section">
+                <h2 class="menu-title">Menu</h2>
+                <div class="menu-grid" id="menuGrid">
+                    <!-- Menu items will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pharmacy Detail Section -->
+    <section class="pharmacy-detail" id="pharmacyDetail">
+        <div class="container">
+            <button class="back-btn" id="backToPharmacies">
+                <i class="fas fa-arrow-left"></i> Back to Pharmacies
+            </button>
+            <div class="restaurant-header">
+                <div class="restaurant-image">
+                    <img id="pharmacyDetailImage" src="" alt="Pharmacy Image">
+                </div>
+                <div class="restaurant-info">
+                    <h1 class="restaurant-name" id="pharmacyDetailName"></h1>
+                    <p class="restaurant-category" id="pharmacyDetailCategory"></p>
+                    <div class="restaurant-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-star rating"></i>
+                            <span id="pharmacyDetailRating"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span id="pharmacyDetailDeliveryTime"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span id="pharmacyDetailPriceRange"></span>
+                        </div>
+                    </div>
+                    <p id="pharmacyDetailDescription"></p>
+                </div>
+            </div>
+            <div class="menu-section">
+                <h2 class="menu-title">Products</h2>
+                <div class="menu-grid" id="pharmacyProductsGrid">
+                    <!-- Pharmacy products will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart -->
+    <div class="cart" id="cartIcon">
+        <i class="fas fa-shopping-cart"></i>
+        <div class="cart-count" id="cartCount">0</div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Sample restaurant data with real Katete business names and expanded menus
+        const restaurants = [
+            {
+                id: 1,
+                name: "Pangani Lodge",
+                category: "Lodge & Restaurant",
+                image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.5,
+                deliveryTime: "15-25 min",
+                price: "ZMW 50-200",
+                description: "A popular lodge and restaurant offering a variety of local and international dishes in a comfortable setting.",
+                menu: [
+                    { name: "Nshima with Chicken", description: "Traditional maize meal served with grilled chicken and vegetables", price: "ZMW 65" },
+                    { name: "Nshima with Beef Stew", description: "Maize meal served with tender beef stew and leafy greens", price: "ZMW 70" },
+                    { name: "Grilled Tilapia", description: "Fresh tilapia fish grilled to perfection with traditional spices", price: "ZMW 85" },
+                    { name: "Ifisashi", description: "Groundnut sauce with vegetables served with nshima", price: "ZMW 55" },
+                    { name: "Chicken Curry", description: "Tender chicken in a flavorful curry sauce with rice", price: "ZMW 75" },
+                    { name: "Beef Burgers", description: "Juicy beef burgers with fresh toppings and fries", price: "ZMW 60" },
+                    { name: "Vegetable Stir Fry", description: "Fresh vegetables stir-fried in a savory sauce", price: "ZMW 50" },
+                    { name: "Fried Rice with Chicken", description: "Flavorful fried rice with tender chicken pieces", price: "ZMW 70" },
+                    { name: "Pork Ribs", description: "Tender pork ribs with barbecue sauce and coleslaw", price: "ZMW 90" },
+                    { name: "Fish and Chips", description: "Crispy battered fish served with chips", price: "ZMW 75" },
+                    { name: "Vegetable Pizza", description: "Pizza topped with fresh vegetables and cheese", price: "ZMW 80" },
+                    { name: "Chicken Pasta", description: "Creamy pasta with grilled chicken and vegetables", price: "ZMW 70" },
+                    { name: "Fruit Salad", description: "Fresh seasonal fruits with yogurt", price: "ZMW 40" },
+                    { name: "Chocolate Cake", description: "Rich chocolate cake with cream frosting", price: "ZMW 45" },
+                    { name: "Soft Drinks", description: "Assorted soft drinks and juices", price: "ZMW 15" }
+                ],
+                location: { lat: -14.0647, lng: 31.9206 }
+            },
+            {
+                id: 2,
+                name: "Bottoms Up",
+                category: "Bar & Restaurant",
+                image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.3,
+                deliveryTime: "20-30 min",
+                price: "ZMW 40-150",
+                description: "A lively bar and restaurant offering drinks, snacks, and full meals in a vibrant atmosphere.",
+                menu: [
+                    { name: "Nshima with Kapenta", description: "Maize meal served with dried small fish and tomatoes", price: "ZMW 45" },
+                    { name: "Chibwabwa", description: "Pumpkin leaves cooked in groundnut sauce", price: "ZMW 35" },
+                    { name: "Chicken Wings", description: "Spicy or mild chicken wings with dipping sauce", price: "ZMW 60" },
+                    { name: "Bean Stew", description: "Hearty bean stew with vegetables", price: "ZMW 40" },
+                    { name: "Beef Skewers", description: "Grilled beef skewers with vegetables", price: "ZMW 65" },
+                    { name: "Cheese Burger", description: "Juicy beef burger with cheese and fries", price: "ZMW 70" },
+                    { name: "Vegetable Samosas", description: "Crispy samosas filled with spiced vegetables", price: "ZMW 30" },
+                    { name: "Chicken Salad", description: "Fresh salad with grilled chicken strips", price: "ZMW 55" },
+                    { name: "French Fries", description: "Crispy golden fries with ketchup", price: "ZMW 25" },
+                    { name: "Onion Rings", description: "Crispy battered onion rings", price: "ZMW 30" },
+                    { name: "Grilled Cheese Sandwich", description: "Toasted sandwich with melted cheese", price: "ZMW 40" },
+                    { name: "Chicken Tenders", description: "Crispy chicken tenders with dipping sauce", price: "ZMW 50" },
+                    { name: "Ice Cream", description: "Vanilla or chocolate ice cream", price: "ZMW 25" },
+                    { name: "Beer", description: "Local and imported beers", price: "ZMW 25" },
+                    { name: "Soft Drinks", description: "Assorted soft drinks and juices", price: "ZMW 15" }
+                ],
+                location: { lat: -14.0680, lng: 31.9180 }
+            },
+            {
+                id: 3,
+                name: "Hungry Rhino",
+                category: "Restaurant",
+                image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.7,
+                deliveryTime: "25-35 min",
+                price: "ZMW 60-250",
+                description: "A family-friendly restaurant specializing in both local Zambian cuisine and international dishes.",
+                menu: [
+                    { name: "Nshima with Oxtail", description: "Traditional maize meal with tender oxtail stew", price: "ZMW 95" },
+                    { name: "Grilled Chicken", description: "Healthy grilled chicken with side salad", price: "ZMW 70" },
+                    { name: "Vegetable Curry", description: "Mixed vegetables in a flavorful curry sauce with rice", price: "ZMW 60" },
+                    { name: "Beef Stroganoff", description: "Tender beef in a creamy sauce with pasta", price: "ZMW 85" },
+                    { name: "Pork Chops", description: "Grilled pork chops with apple sauce and vegetables", price: "ZMW 80" },
+                    { name: "Fish Curry", description: "Fresh fish in a spicy curry sauce with rice", price: "ZMW 75" },
+                    { name: "Chicken Pie", description: "Savory chicken pie with vegetables", price: "ZMW 65" },
+                    { name: "Vegetable Lasagna", description: "Layers of pasta with vegetables and cheese", price: "ZMW 70" },
+                    { name: "BBQ Ribs", description: "Tender ribs with barbecue sauce and coleslaw", price: "ZMW 90" },
+                    { name: "Chicken Wrap", description: "Grilled chicken wrapped in tortilla with salad", price: "ZMW 55" },
+                    { name: "Greek Salad", description: "Fresh salad with feta cheese and olives", price: "ZMW 50" },
+                    { name: "Fruit Platter", description: "Assorted fresh fruits", price: "ZMW 45" },
+                    { name: "Chocolate Mousse", description: "Rich chocolate mousse dessert", price: "ZMW 40" },
+                    { name: "Coffee", description: "Freshly brewed coffee", price: "ZMW 20" },
+                    { name: "Fresh Juice", description: "Seasonal fresh fruit juice", price: "ZMW 25" }
+                ],
+                location: { lat: -14.0620, lng: 31.9220 }
+            },
+            {
+                id: 4,
+                name: "Katete Grill House",
+                category: "Zambian Cuisine",
+                image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.2,
+                deliveryTime: "15-20 min",
+                price: "ZMW 40-120",
+                description: "Authentic Zambian cuisine with a modern twist. Our specialties include nshima with various relishes, grilled meats, and traditional beverages.",
+                menu: [
+                    { name: "Nshima with Chicken", description: "Traditional maize meal served with grilled chicken and vegetables", price: "ZMW 65" },
+                    { name: "Nshima with Beef Stew", description: "Maize meal served with tender beef stew and leafy greens", price: "ZMW 70" },
+                    { name: "Grilled Tilapia", description: "Fresh tilapia fish grilled to perfection with traditional spices", price: "ZMW 85" },
+                    { name: "Ifisashi", description: "Groundnut sauce with vegetables served with nshima", price: "ZMW 55" },
+                    { name: "Kapenta with Tomatoes", description: "Dried small fish cooked with tomatoes and onions", price: "ZMW 50" },
+                    { name: "Chicken Livers", description: "Chicken livers cooked in a savory sauce", price: "ZMW 60" },
+                    { name: "Vegetable Relish", description: "Mixed vegetables cooked in a tomato-based sauce", price: "ZMW 40" },
+                    { name: "Bean Stew", description: "Hearty bean stew with vegetables", price: "ZMW 45" },
+                    { name: "Pumpkin Leaves", description: "Fresh pumpkin leaves cooked in groundnut sauce", price: "ZMW 35" },
+                    { name: "Fried Chicken", description: "Crispy fried chicken pieces", price: "ZMW 70" },
+                    { name: "Beef Kebabs", description: "Grilled beef kebabs with peppers and onions", price: "ZMW 75" },
+                    { name: "Rice with Chicken", description: "Steamed rice with grilled chicken", price: "ZMW 65" },
+                    { name: "Fruit Salad", description: "Fresh seasonal fruits", price: "ZMW 30" },
+                    { name: "Maheu", description: "Traditional fermented drink", price: "ZMW 15" },
+                    { name: "Soft Drinks", description: "Assorted soft drinks", price: "ZMW 15" }
+                ],
+                location: { lat: -14.0660, lng: 31.9250 }
+            },
+            {
+                id: 5,
+                name: "Mama's Kitchen",
+                category: "Local Food",
+                image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.8,
+                deliveryTime: "20-30 min",
+                price: "ZMW 30-100",
+                description: "Home-cooked meals that taste just like mama used to make. We specialize in traditional Zambian dishes prepared with love.",
+                menu: [
+                    { name: "Nshima with Kapenta", description: "Maize meal served with dried small fish and tomatoes", price: "ZMW 45" },
+                    { name: "Chibwabwa", description: "Pumpkin leaves cooked in groundnut sauce", price: "ZMW 35" },
+                    { name: "Chicken Curry", description: "Tender chicken in a flavorful curry sauce", price: "ZMW 65" },
+                    { name: "Bean Stew", description: "Hearty bean stew with vegetables", price: "ZMW 40" },
+                    { name: "Vegetable Soup", description: "Hearty vegetable soup with bread", price: "ZMW 35" },
+                    { name: "Rice with Fish", description: "Steamed rice with grilled fish", price: "ZMW 60" },
+                    { name: "Cabbage with Tomatoes", description: "Fresh cabbage cooked with tomatoes", price: "ZMW 30" },
+                    { name: "Okra Stew", description: "Okra cooked in a savory tomato sauce", price: "ZMW 35" },
+                    { name: "Sweet Potato Leaves", description: "Fresh sweet potato leaves cooked in groundnut sauce", price: "ZMW 35" },
+                    { name: "Eggplant Stew", description: "Eggplant cooked in a flavorful tomato sauce", price: "ZMW 35" },
+                    { name: "Fried Plantains", description: "Sweet fried plantains", price: "ZMW 25" },
+                    { name: "Cassava with Fish", description: "Boiled cassava with grilled fish", price: "ZMW 50" },
+                    { name: "Fruit Salad", description: "Fresh seasonal fruits", price: "ZMW 30" },
+                    { name: "Porridge", description: "Traditional maize porridge", price: "ZMW 20" },
+                    { name: "Tea", description: "Hot tea with milk and sugar", price: "ZMW 15" }
+                ],
+                location: { lat: -14.0700, lng: 31.9150 }
+            },
+            {
+                id: 6,
+                name: "Katete Delights",
+                category: "Cafe & Bakery",
+                image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.6,
+                deliveryTime: "10-20 min",
+                price: "ZMW 20-80",
+                description: "Freshly baked goods, coffee, and light meals in a cozy atmosphere.",
+                menu: [
+                    { name: "Fresh Bread", description: "Freshly baked bread loaf", price: "ZMW 15" },
+                    { name: "Croissants", description: "Buttery, flaky croissants", price: "ZMW 12" },
+                    { name: "Muffins", description: "Blueberry or chocolate muffins", price: "ZMW 10" },
+                    { name: "Coffee", description: "Freshly brewed coffee", price: "ZMW 20" },
+                    { name: "Tea", description: "Various tea selections", price: "ZMW 15" },
+                    { name: "Sandwiches", description: "Fresh sandwiches with various fillings", price: "ZMW 35" },
+                    { name: "Salads", description: "Fresh garden salads", price: "ZMW 40" },
+                    { name: "Cakes", description: "Slice of chocolate or vanilla cake", price: "ZMW 25" },
+                    { name: "Cookies", description: "Homemade chocolate chip cookies", price: "ZMW 8" },
+                    { name: "Smoothies", description: "Fresh fruit smoothies", price: "ZMW 30" },
+                    { name: "Bagels", description: "Fresh bagels with cream cheese", price: "ZMW 25" },
+                    { name: "Pastries", description: "Assorted pastries", price: "ZMW 15" },
+                    { name: "Yogurt Parfait", description: "Yogurt with granola and fruits", price: "ZMW 35" },
+                    { name: "Juices", description: "Freshly squeezed juices", price: "ZMW 25" },
+                    { name: "Iced Coffee", description: "Chilled coffee beverage", price: "ZMW 30" }
+                ],
+                location: { lat: -14.0635, lng: 31.9190 }
+            }
+        ];
+
+        // Sample pharmacy data
+        const pharmacies = [
+            {
+                id: 1,
+                name: "Katete Central Pharmacy",
+                category: "Pharmacy & Health Store",
+                image: "https://images.unsplash.com/photo-1585435557343-3b092031d5ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.4,
+                deliveryTime: "10-20 min",
+                price: "ZMW 5-200",
+                description: "Your trusted local pharmacy offering prescription medicines, over-the-counter drugs, and health products.",
+                products: [
+                    { name: "Paracetamol 500mg", description: "Pain and fever relief tablets (20 tablets)", price: "ZMW 12" },
+                    { name: "Amoxicillin 500mg", description: "Antibiotic capsules (10 capsules)", price: "ZMW 45" },
+                    { name: "Vitamin C 1000mg", description: "Immune system support tablets (30 tablets)", price: "ZMW 35" },
+                    { name: "Ibuprofen 400mg", description: "Anti-inflammatory pain relief (20 tablets)", price: "ZMW 18" },
+                    { name: "Antihistamine Tablets", description: "Allergy relief (14 tablets)", price: "ZMW 25" },
+                    { name: "Cough Syrup", description: "For dry and chesty cough (100ml)", price: "ZMW 32" },
+                    { name: "Antiseptic Cream", description: "For cuts and wounds (30g)", price: "ZMW 28" },
+                    { name: "Bandages", description: "Assorted sizes for wound dressing", price: "ZMW 15" },
+                    { name: "Thermometer", description: "Digital thermometer for temperature measurement", price: "ZMW 65" },
+                    { name: "Blood Pressure Monitor", description: "Digital blood pressure machine", price: "ZMW 180" },
+                    { name: "First Aid Kit", description: "Complete first aid kit for emergencies", price: "ZMW 120" },
+                    { name: "Hand Sanitizer", description: "Alcohol-based sanitizer (250ml)", price: "ZMW 22" },
+                    { name: "Face Masks", description: "Pack of 10 disposable face masks", price: "ZMW 25" },
+                    { name: "Multivitamins", description: "Daily multivitamin supplement (30 tablets)", price: "ZMW 55" },
+                    { name: "Baby Diapers", description: "Pack of 30 medium size diapers", price: "ZMW 95" }
+                ],
+                location: { lat: -14.0650, lng: 31.9210 }
+            },
+            {
+                id: 2,
+                name: "St. Francis Pharmacy",
+                category: "Hospital Pharmacy",
+                image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.7,
+                deliveryTime: "15-25 min",
+                price: "ZMW 10-300",
+                description: "Professional pharmacy service with a wide range of prescription medicines and medical supplies.",
+                products: [
+                    { name: "Diabetes Test Strips", description: "Blood glucose test strips (50 strips)", price: "ZMW 120" },
+                    { name: "Insulin", description: "Fast-acting insulin (10ml vial)", price: "ZMW 85" },
+                    { name: "Asthma Inhaler", description: "Relief for asthma symptoms", price: "ZMW 65" },
+                    { name: "Antibiotic Ointment", description: "Topical antibiotic for skin infections (15g)", price: "ZMW 32" },
+                    { name: "Antacid Tablets", description: "For heartburn and indigestion (24 tablets)", price: "ZMW 28" },
+                    { name: "Cold & Flu Tablets", description: "Multi-symptom relief (16 tablets)", price: "ZMW 35" },
+                    { name: "Pain Relief Gel", description: "Topical pain relief for muscles and joints (50g)", price: "ZMW 42" },
+                    { name: "Eye Drops", description: "For dry and irritated eyes (10ml)", price: "ZMW 38" },
+                    { name: "Nasal Spray", description: "For nasal congestion (15ml)", price: "ZMW 45" },
+                    { name: "Prescription Glasses", description: "Reading glasses (+1.0 to +3.5)", price: "ZMW 150" },
+                    { name: "Walking Cane", description: "Adjustable aluminum walking cane", price: "ZMW 85" },
+                    { name: "Compression Stockings", description: "Medical grade compression stockings", price: "ZMW 95" },
+                    { name: "Diabetic Socks", description: "Special socks for diabetic patients (3 pairs)", price: "ZMW 65" },
+                    { name: "Medical Gloves", description: "Box of 100 disposable medical gloves", price: "ZMW 55" },
+                    { name: "Disinfectant Spray", description: "Surface disinfectant (500ml)", price: "ZMW 48" }
+                ],
+                location: { lat: -14.0700, lng: 31.9300 }
+            },
+            {
+                id: 3,
+                name: "Wellness Pharmacy",
+                category: "Health & Wellness",
+                image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.5,
+                deliveryTime: "20-30 min",
+                price: "ZMW 8-150",
+                description: "Focusing on preventive health, supplements, and wellness products to keep you healthy.",
+                products: [
+                    { name: "Vitamin D3 1000IU", description: "Bone health and immunity support (60 capsules)", price: "ZMW 45" },
+                    { name: "Omega-3 Fish Oil", description: "Heart and brain health supplement (60 capsules)", price: "ZMW 65" },
+                    { name: "Probiotics", description: "Gut health and digestion support (30 capsules)", price: "ZMW 75" },
+                    { name: "Zinc Supplements", description: "Immune system support (60 tablets)", price: "ZMW 38" },
+                    { name: "Iron Tablets", description: "For iron deficiency anemia (30 tablets)", price: "ZMW 42" },
+                    { name: "Calcium + Vitamin D", description: "Bone health supplement (60 tablets)", price: "ZMW 55" },
+                    { name: "Protein Powder", description: "Whey protein for muscle recovery (500g)", price: "ZMW 120" },
+                    { name: "Energy Bars", description: "Pack of 5 high-protein energy bars", price: "ZMW 45" },
+                    { name: "Herbal Tea", description: "Relaxing chamomile tea (20 tea bags)", price: "ZMW 35" },
+                    { name: "Essential Oils Set", description: "Set of 5 therapeutic essential oils", price: "ZMW 95" },
+                    { name: "Aromatherapy Diffuser", description: "Ultrasonic essential oil diffuser", price: "ZMW 150" },
+                    { name: "Yoga Mat", description: "Non-slip exercise yoga mat", price: "ZMW 85" },
+                    { name: "Resistance Bands", description: "Set of 5 different resistance levels", price: "ZMW 65" },
+                    { name: "Foam Roller", description: "For muscle recovery and flexibility", price: "ZMW 75" },
+                    { name: "Water Bottle", description: "1L BPA-free water bottle", price: "ZMW 35" }
+                ],
+                location: { lat: -14.0625, lng: 31.9175 }
+            },
+            {
+                id: 4,
+                name: "Family Care Pharmacy",
+                category: "Family Pharmacy",
+                image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+                rating: 4.6,
+                deliveryTime: "15-25 min",
+                price: "ZMW 10-180",
+                description: "Your one-stop shop for family healthcare needs, from baby care to senior health products.",
+                products: [
+                    { name: "Baby Formula", description: "Infant milk formula (900g)", price: "ZMW 95" },
+                    { name: "Baby Lotion", description: "Gentle moisturizing lotion for babies (200ml)", price: "ZMW 32" },
+                    { name: "Diaper Rash Cream", description: "Protective barrier cream (50g)", price: "ZMW 28" },
+                    { name: "Children's Paracetamol", description: "Pain and fever syrup for children (100ml)", price: "ZMW 35" },
+                    { name: "Pregnancy Test", description: "Early detection pregnancy test (2 tests)", price: "ZMW 45" },
+                    { name: "Prenatal Vitamins", description: "Essential vitamins for pregnancy (30 tablets)", price: "ZMW 65" },
+                    { name: "Baby Thermometer", description: "Digital ear thermometer for babies", price: "ZMW 120" },
+                    { name: "Nasal Aspirator", description: "For clearing baby's stuffy nose", price: "ZMW 25" },
+                    { name: "Teething Gel", description: "Soothing gel for teething babies (10g)", price: "ZMW 32" },
+                    { name: "Baby Shampoo", description: "Tear-free baby shampoo (200ml)", price: "ZMW 28" },
+                    { name: "Adult Diapers", description: "Pack of 10 absorbent adult diapers", price: "ZMW 85" },
+                    { name: "Joint Pain Cream", description: "Topical relief for arthritis pain (50g)", price: "ZMW 42" },
+                    { name: "Blood Sugar Monitor", description: "Glucose meter with test strips", price: "ZMW 180" },
+                    { name: "Pill Organizer", description: "Weekly pill organizer with 7 compartments", price: "ZMW 25" },
+                    { name: "Medical Alert Bracelet", description: "Personalized medical ID bracelet", price: "ZMW 55" }
+                ],
+                location: { lat: -14.0670, lng: 31.9230 }
+            }
+        ];
+
+        // Expanded Katete locations data with more coverage
+        const kateteLocations = [
+            { name: "Katete Boma", lat: -14.0647, lng: 31.9206, type: "government", description: "District administrative center" },
+            { name: "St. Francis Hospital", lat: -14.0700, lng: 31.9300, type: "hospital", description: "Major healthcare facility in Katete" },
+            { name: "Chinkombe Road", lat: -14.0550, lng: 31.9050, type: "area", description: "Main road with residential areas and businesses" },
+            { name: "Chibolya Market", lat: -14.0600, lng: 31.9150, type: "area", description: "Busy market area with various shops" },
+            { name: "Soweto Zone", lat: -14.0750, lng: 31.9100, type: "area", description: "Residential neighborhood with local stores" },
+            { name: "KFC Katete", lat: -14.0630, lng: 31.9170, type: "restaurant", description: "Popular fast food restaurant" },
+            { name: "Great East Road", lat: -14.0650, lng: 31.9180, type: "road", description: "Major highway through Katete" },
+            { name: "Airport Road", lat: -14.0720, lng: 31.9250, type: "road", description: "Road connecting to the local airstrip" },
+            { name: "Market Street", lat: -14.0620, lng: 31.9150, type: "road", description: "Street with various market stalls" },
+            { name: "School Road", lat: -14.0680, lng: 31.9120, type: "road", description: "Road with several educational institutions" },
+            { name: "Chilwa Market", lat: -14.0580, lng: 31.9220, type: "area", description: "Local market with fresh produce" },
+            { name: "Katete Police Station", lat: -14.0660, lng: 31.9190, type: "government", description: "Local police station" },
+            { name: "Katete Post Office", lat: -14.0630, lng: 31.9210, type: "government", description: "Postal services" },
+            { name: "Katete High School", lat: -14.0690, lng: 31.9130, type: "education", description: "Secondary education institution" },
+            { name: "Katete Primary School", lat: -14.0670, lng: 31.9140, type: "education", description: "Primary education institution" },
+            { name: "Katete Central Market", lat: -14.0625, lng: 31.9165, type: "area", description: "Central market with various goods" },
+            { name: "Chalimbana University", lat: -14.0800, lng: 31.9350, type: "education", description: "University campus" },
+            { name: "Katete Bus Station", lat: -14.0655, lng: 31.9175, type: "transport", description: "Main bus station" }
+        ];
+
+        // DOM Elements
+        const restaurantsGrid = document.getElementById('restaurantsGrid');
+        const pharmaciesGrid = document.getElementById('pharmaciesGrid');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const signInBtn = document.getElementById('signInBtn');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const mobileSignInBtn = document.getElementById('mobileSignInBtn');
+        const mobileSignUpBtn = document.getElementById('mobileSignUpBtn');
+        const signInModal = document.getElementById('signInModal');
+        const signUpModal = document.getElementById('signUpModal');
+        const cartModal = document.getElementById('cartModal');
+        const closeSignInModal = document.getElementById('closeSignInModal');
+        const closeSignUpModal = document.getElementById('closeSignUpModal');
+        const closeCartModal = document.getElementById('closeCartModal');
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const logo = document.getElementById('logo');
+        const serviceCards = document.querySelectorAll('.service-card');
+        const restaurantDetail = document.getElementById('restaurantDetail');
+        const pharmacyDetail = document.getElementById('pharmacyDetail');
+        const backToRestaurants = document.getElementById('backToRestaurants');
+        const backToPharmacies = document.getElementById('backToPharmacies');
+        const satelliteViewBtn = document.getElementById('satelliteView');
+        const streetViewBtn = document.getElementById('streetView');
+        const navLinks = document.querySelectorAll('.nav-links a, .footer-links a, .mobile-nav a');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileNav = document.getElementById('mobileNav');
+        const cartIcon = document.getElementById('cartIcon');
+        const cartCount = document.getElementById('cartCount');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotalPrice = document.getElementById('cartTotalPrice');
+        const continueShoppingBtn = document.getElementById('continueShoppingBtn');
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+        // Map variables
+        let map;
+        let currentLayer = 'street';
+        let streetLayer, satelliteLayer;
+        let cart = [];
+
+        // Function to generate restaurant cards
+        function generateRestaurantCards(filteredRestaurants = restaurants) {
+            restaurantsGrid.innerHTML = '';
+            
+            if (filteredRestaurants.length === 0) {
+                restaurantsGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; font-size: 1.2rem; color: var(--accent);">No restaurants found matching your search.</p>';
+                return;
+            }
+            
+            filteredRestaurants.forEach(restaurant => {
+                const card = document.createElement('div');
+                card.className = 'restaurant-card';
+                card.dataset.id = restaurant.id;
+                
+                // Generate star rating HTML
+                let stars = '';
+                const fullStars = Math.floor(restaurant.rating);
+                const hasHalfStar = restaurant.rating % 1 !== 0;
+                
+                for (let i = 0; i < fullStars; i++) {
+                    stars += '<i class="fas fa-star"></i>';
+                }
+                
+                if (hasHalfStar) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                }
+                
+                const emptyStars = 5 - Math.ceil(restaurant.rating);
+                for (let i = 0; i < emptyStars; i++) {
+                    stars += '<i class="far fa-star"></i>';
+                }
+                
+                card.innerHTML = `
+                    <img src="${restaurant.image}" alt="${restaurant.name}" class="card-img">
+                    <div class="card-content">
+                        <h3 class="card-title">${restaurant.name}</h3>
+                        <div class="card-info">
+                            <span>${restaurant.category}</span>
+                            <span class="rating">${stars} ${restaurant.rating}</span>
+                        </div>
+                        <div class="card-info">
+                            <span><i class="fas fa-clock"></i> ${restaurant.deliveryTime}</span>
+                            <span class="price">${restaurant.price}</span>
+                        </div>
+                        <div class="card-footer">
+                            <button class="order-btn">Order Now</button>
+                        </div>
+                    </div>
+                `;
+                
+                restaurantsGrid.appendChild(card);
+            });
+        }
+
+        // Function to generate pharmacy cards
+        function generatePharmacyCards(filteredPharmacies = pharmacies) {
+            pharmaciesGrid.innerHTML = '';
+            
+            if (filteredPharmacies.length === 0) {
+                pharmaciesGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; font-size: 1.2rem; color: var(--accent);">No pharmacies found matching your search.</p>';
+                return;
+            }
+            
+            filteredPharmacies.forEach(pharmacy => {
+                const card = document.createElement('div');
+                card.className = 'pharmacy-card';
+                card.dataset.id = pharmacy.id;
+                
+                // Generate star rating HTML
+                let stars = '';
+                const fullStars = Math.floor(pharmacy.rating);
+                const hasHalfStar = pharmacy.rating % 1 !== 0;
+                
+                for (let i = 0; i < fullStars; i++) {
+                    stars += '<i class="fas fa-star"></i>';
+                }
+                
+                if (hasHalfStar) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                }
+                
+                const emptyStars = 5 - Math.ceil(pharmacy.rating);
+                for (let i = 0; i < emptyStars; i++) {
+                    stars += '<i class="far fa-star"></i>';
+                }
+                
+                card.innerHTML = `
+                    <img src="${pharmacy.image}" alt="${pharmacy.name}" class="card-img">
+                    <div class="card-content">
+                        <h3 class="card-title">${pharmacy.name}</h3>
+                        <div class="card-info">
+                            <span>${pharmacy.category}</span>
+                            <span class="rating">${stars} ${pharmacy.rating}</span>
+                        </div>
+                        <div class="card-info">
+                            <span><i class="fas fa-clock"></i> ${pharmacy.deliveryTime}</span>
+                            <span class="price">${pharmacy.price}</span>
+                        </div>
+                        <div class="card-footer">
+                            <button class="order-btn">Order Now</button>
+                        </div>
+                    </div>
+                `;
+                
+                pharmaciesGrid.appendChild(card);
+            });
+        }
+
+        // Initialize map with detailed Katete area
+        function initMap() {
+            // Coordinates for Katete District, Eastern Zambia
+            const kateteCoords = [-14.0647, 31.9206];
+            
+            // Create map
+            map = L.map('katete-map').setView(kateteCoords, 14);
+            
+            // Define different tile layers
+            streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            });
+            
+            satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            });
+            
+            // Add default layer
+            streetLayer.addTo(map);
+            currentLayer = 'street';
+            
+            // Add custom icons for different location types
+            const iconColors = {
+                government: 'blue',
+                hospital: 'red',
+                area: 'orange',
+                restaurant: 'green',
+                road: 'gray',
+                education: 'purple',
+                transport: 'darkred'
+            };
+            
+            // Add markers for Katete locations
+            kateteLocations.forEach(location => {
+                const customIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color: ${iconColors[location.type]}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+                
+                L.marker([location.lat, location.lng], {icon: customIcon})
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="popup-title">${location.name}</div>
+                        <div class="popup-desc">${location.description}</div>
+                        <button class="popup-btn" data-location="${location.name}">View Delivery Options</button>
+                    `);
+            });
+            
+            // Add restaurant markers with actual photos
+            restaurants.forEach(restaurant => {
+                const restaurantIcon = L.divIcon({
+                    className: 'restaurant-div-icon',
+                    html: `<div style="background-color: var(--primary); width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
+                             <i class="fas fa-utensils" style="color: white; font-size: 8px;"></i>
+                           </div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                
+                L.marker([restaurant.location.lat, restaurant.location.lng], {icon: restaurantIcon})
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="popup-title">${restaurant.name}</div>
+                        <div class="popup-desc">${restaurant.category} • ${restaurant.rating} ★</div>
+                        <img src="${restaurant.image}" alt="${restaurant.name}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 5px; margin: 5px 0;">
+                        <button class="popup-btn" data-restaurant="${restaurant.id}">View Menu & Order</button>
+                    `);
+            });
+
+            // Add pharmacy markers
+            pharmacies.forEach(pharmacy => {
+                const pharmacyIcon = L.divIcon({
+                    className: 'pharmacy-div-icon',
+                    html: `<div style="background-color: #2a9d8f; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
+                             <i class="fas fa-pills" style="color: white; font-size: 8px;"></i>
+                           </div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                
+                L.marker([pharmacy.location.lat, pharmacy.location.lng], {icon: pharmacyIcon})
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="popup-title">${pharmacy.name}</div>
+                        <div class="popup-desc">${pharmacy.category} • ${pharmacy.rating} ★</div>
+                        <img src="${pharmacy.image}" alt="${pharmacy.name}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 5px; margin: 5px 0;">
+                        <button class="popup-btn" data-pharmacy="${pharmacy.id}">View Products & Order</button>
+                    `);
+            });
+            
+            // Draw roads as polylines (approximated coordinates for actual streets)
+            const mainRoads = [
+                // Great East Road (T2) through Katete
+                [
+                    [-14.055, 31.905],
+                    [-14.060, 31.910],
+                    [-14.065, 31.915],
+                    [-14.070, 31.920],
+                    [-14.075, 31.925],
+                    [-14.080, 31.930]
+                ],
+                // Chinkombe Road
+                [
+                    [-14.055, 31.905],
+                    [-14.050, 31.900],
+                    [-14.045, 31.895]
+                ],
+                // Road to St. Francis Hospital
+                [
+                    [-14.065, 31.915],
+                    [-14.068, 31.920],
+                    [-14.070, 31.925],
+                    [-14.070, 31.930]
+                ],
+                // Market Street
+                [
+                    [-14.065, 31.915],
+                    [-14.062, 31.917],
+                    [-14.060, 31.915],
+                    [-14.058, 31.913]
+                ],
+                // Airport Road
+                [
+                    [-14.065, 31.915],
+                    [-14.070, 31.912],
+                    [-14.072, 31.910],
+                    [-14.075, 31.908]
+                ],
+                // School Road
+                [
+                    [-14.068, 31.918],
+                    [-14.070, 31.915],
+                    [-14.072, 31.912]
+                ],
+                // Soweto Zone roads
+                [
+                    [-14.075, 31.910],
+                    [-14.078, 31.908],
+                    [-14.080, 31.905]
+                ],
+                [
+                    [-14.073, 31.912],
+                    [-14.076, 31.910],
+                    [-14.079, 31.908]
+                ]
+            ];
+            
+            mainRoads.forEach(road => {
+                L.polyline(road, {
+                    color: '#ff7e00',
+                    weight: 4,
+                    opacity: 0.7,
+                    lineJoin: 'round'
+                }).addTo(map);
+            });
+            
+            // Draw a polygon to show detailed coverage area
+            const coverageArea = [
+                [-14.045, 31.900],
+                [-14.045, 31.940],
+                [-14.085, 31.940],
+                [-14.085, 31.900]
+            ];
+            
+            L.polygon(coverageArea, {
+                color: '#1d3557',
+                fillColor: '#457b9d',
+                fillOpacity: 0.1,
+                weight: 2
+            }).addTo(map).bindPopup("Kdeli Coverage Area - Katete District");
+        }
+
+        // Show restaurant detail page
+        function showRestaurantDetail(restaurantId) {
+            const restaurant = restaurants.find(r => r.id === parseInt(restaurantId));
+            if (!restaurant) return;
+            
+            // Update restaurant detail page
+            document.getElementById('detailImage').src = restaurant.image;
+            document.getElementById('detailName').textContent = restaurant.name;
+            document.getElementById('detailCategory').textContent = restaurant.category;
+            document.getElementById('detailRating').textContent = restaurant.rating;
+            document.getElementById('detailDeliveryTime').textContent = restaurant.deliveryTime;
+            document.getElementById('detailPriceRange').textContent = restaurant.price;
+            document.getElementById('detailDescription').textContent = restaurant.description;
+            
+            // Generate menu items
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = '';
+            
+            restaurant.menu.forEach((item, index) => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.style.animationDelay = `${0.1 + index * 0.1}s`;
+                menuItem.innerHTML = `
+                    <h3 class="menu-item-name">${item.name}</h3>
+                    <p class="menu-item-desc">${item.description}</p>
+                    <div class="menu-item-footer">
+                        <span class="menu-item-price">${item.price}</span>
+                        <button class="order-btn add-to-cart" data-name="${item.name}" data-price="${item.price}">Add to Cart</button>
+                    </div>
+                `;
+                menuGrid.appendChild(menuItem);
+            });
+            
+            // Show restaurant detail and hide main content
+            document.querySelectorAll('section:not(#restaurantDetail)').forEach(section => {
+                section.style.display = 'none';
+            });
+            restaurantDetail.style.display = 'block';
+            
+            // Scroll to top of restaurant detail
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show pharmacy detail page
+        function showPharmacyDetail(pharmacyId) {
+            const pharmacy = pharmacies.find(p => p.id === parseInt(pharmacyId));
+            if (!pharmacy) return;
+            
+            // Update pharmacy detail page
+            document.getElementById('pharmacyDetailImage').src = pharmacy.image;
+            document.getElementById('pharmacyDetailName').textContent = pharmacy.name;
+            document.getElementById('pharmacyDetailCategory').textContent = pharmacy.category;
+            document.getElementById('pharmacyDetailRating').textContent = pharmacy.rating;
+            document.getElementById('pharmacyDetailDeliveryTime').textContent = pharmacy.deliveryTime;
+            document.getElementById('pharmacyDetailPriceRange').textContent = pharmacy.price;
+            document.getElementById('pharmacyDetailDescription').textContent = pharmacy.description;
+            
+            // Generate pharmacy products
+            const pharmacyProductsGrid = document.getElementById('pharmacyProductsGrid');
+            pharmacyProductsGrid.innerHTML = '';
+            
+            pharmacy.products.forEach((product, index) => {
+                const productItem = document.createElement('div');
+                productItem.className = 'menu-item';
+                productItem.style.animationDelay = `${0.1 + index * 0.1}s`;
+                productItem.innerHTML = `
+                    <h3 class="menu-item-name">${product.name}</h3>
+                    <p class="menu-item-desc">${product.description}</p>
+                    <div class="menu-item-footer">
+                        <span class="menu-item-price">${product.price}</span>
+                        <button class="order-btn add-to-cart" data-name="${product.name}" data-price="${product.price}">Add to Cart</button>
+                    </div>
+                `;
+                pharmacyProductsGrid.appendChild(productItem);
+            });
+            
+            // Show pharmacy detail and hide main content
+            document.querySelectorAll('section:not(#pharmacyDetail)').forEach(section => {
+                section.style.display = 'none';
+            });
+            pharmacyDetail.style.display = 'block';
+            
+            // Scroll to top of pharmacy detail
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show main content and hide detail pages
+        function showMainContent() {
+            restaurantDetail.style.display = 'none';
+            pharmacyDetail.style.display = 'none';
+            document.querySelectorAll('section').forEach(section => {
+                if (section.id !== 'restaurantDetail' && section.id !== 'pharmacyDetail') {
+                    section.style.display = 'block';
+                }
+            });
+        }
+
+        // Scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                window.scrollTo({
+                    top: section.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Search functionality
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                generateRestaurantCards();
+                generatePharmacyCards();
+                return;
+            }
+            
+            const filteredRestaurants = restaurants.filter(restaurant => {
+                // Search in restaurant name, category, and menu items
+                return (
+                    restaurant.name.toLowerCase().includes(searchTerm) ||
+                    restaurant.category.toLowerCase().includes(searchTerm) ||
+                    restaurant.menu.some(item => 
+                        item.name.toLowerCase().includes(searchTerm) ||
+                        item.description.toLowerCase().includes(searchTerm)
+                    )
+                );
+            });
+            
+            const filteredPharmacies = pharmacies.filter(pharmacy => {
+                // Search in pharmacy name, category, and products
+                return (
+                    pharmacy.name.toLowerCase().includes(searchTerm) ||
+                    pharmacy.category.toLowerCase().includes(searchTerm) ||
+                    pharmacy.products.some(product => 
+                        product.name.toLowerCase().includes(searchTerm) ||
+                        product.description.toLowerCase().includes(searchTerm)
+                    )
+                );
+            });
+            
+            generateRestaurantCards(filteredRestaurants);
+            generatePharmacyCards(filteredPharmacies);
+            
+            // If we're on a detail page, go back to main content
+            if (restaurantDetail.style.display === 'block' || pharmacyDetail.style.display === 'block') {
+                showMainContent();
+            }
+            
+            // Scroll to restaurants section if there are results
+            if (filteredRestaurants.length > 0) {
+                scrollToSection('restaurants');
+            } else if (filteredPharmacies.length > 0) {
+                scrollToSection('pharmacies');
+            }
+        }
+
+        // Add item to cart
+        function addToCart(itemName, itemPrice) {
+            cart.push({ name: itemName, price: itemPrice });
+            updateCartCount();
+            updateCartModal();
+            
+            // Show confirmation
+            const confirmation = document.createElement('div');
+            confirmation.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 30px;
+                background: var(--gradient);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 2000;
+                animation: slideInRight 0.5s ease-out;
+            `;
+            confirmation.innerHTML = `<i class="fas fa-check-circle"></i> ${itemName} added to cart!`;
+            document.body.appendChild(confirmation);
+            
+            setTimeout(() => {
+                confirmation.style.animation = 'slideOutRight 0.5s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(confirmation);
+                }, 500);
+            }, 3000);
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            cartCount.textContent = cart.length;
+            
+            // Add animation to cart icon
+            cartIcon.style.animation = 'none';
+            setTimeout(() => {
+                cartIcon.style.animation = 'bounce 2s infinite';
+            }, 10);
+        }
+
+        // Update cart modal
+        function updateCartModal() {
+            cartItems.innerHTML = '';
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--accent);">Your cart is empty</p>';
+                cartTotalPrice.textContent = 'ZMW 0.00';
+                return;
+            }
+            
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                
+                // Extract price value from string (e.g., "ZMW 65" -> 65)
+                const priceValue = parseFloat(item.price.replace('ZMW ', ''));
+                total += priceValue;
+                
+                cartItem.innerHTML = `
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${item.price}</div>
+                    </div>
+                    <button class="cart-item-remove" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                cartItems.appendChild(cartItem);
+            });
+            
+            cartTotalPrice.textContent = `ZMW ${total.toFixed(2)}`;
+        }
+
+        // Remove item from cart
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            updateCartModal();
+        }
+
+        // Place order
+        function placeOrder() {
+            if (cart.length === 0) {
+                alert('Your cart is empty. Add some items before placing an order.');
+                return;
+            }
+            
+            // In a real application, you would send the order to a server here
+            alert('Order placed successfully! Thank you for choosing Kdeli.');
+            
+            // Clear cart
+            cart = [];
+            updateCartCount();
+            updateCartModal();
+            cartModal.style.display = 'none';
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            generateRestaurantCards();
+            generatePharmacyCards();
+            initMap();
+            
+            // Logo click - scroll to top
+            logo.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            // Navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    scrollToSection(section);
+                    
+                    // Close mobile menu if open
+                    mobileNav.style.display = 'none';
+                });
+            });
+            
+            // Mobile menu toggle
+            mobileMenu.addEventListener('click', function() {
+                mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileMenu.contains(e.target) && !mobileNav.contains(e.target)) {
+                    mobileNav.style.display = 'none';
+                }
+            });
+            
+            // Search functionality
+            searchBtn.addEventListener('click', performSearch);
+            
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // Modal functionality
+            signInBtn.addEventListener('click', function() {
+                signInModal.style.display = 'flex';
+            });
+            
+            signUpBtn.addEventListener('click', function() {
+                signUpModal.style.display = 'flex';
+            });
+            
+            mobileSignInBtn.addEventListener('click', function() {
+                signInModal.style.display = 'flex';
+                mobileNav.style.display = 'none';
+            });
+            
+            mobileSignUpBtn.addEventListener('click', function() {
+                signUpModal.style.display = 'flex';
+                mobileNav.style.display = 'none';
+            });
+            
+            closeSignInModal.addEventListener('click', function() {
+                signInModal.style.display = 'none';
+            });
+            
+            closeSignUpModal.addEventListener('click', function() {
+                signUpModal.style.display = 'none';
+            });
+            
+            closeCartModal.addEventListener('click', function() {
+                cartModal.style.display = 'none';
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === signInModal) {
+                    signInModal.style.display = 'none';
+                }
+                if (e.target === signUpModal) {
+                    signUpModal.style.display = 'none';
+                }
+                if (e.target === cartModal) {
+                    cartModal.style.display = 'none';
+                }
+            });
+            
+            // Form submissions
+            signInForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Sign In functionality would be implemented here');
+                signInModal.style.display = 'none';
+            });
+            
+            signUpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Sign Up functionality would be implemented here');
+                signUpModal.style.display = 'none';
+            });
+            
+            // Service card clicks
+            serviceCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const service = this.dataset.service;
+                    if (service === 'pharmacy') {
+                        scrollToSection('pharmacies');
+                    } else {
+                        scrollToSection('restaurants');
+                    }
+                });
+            });
+            
+            // Restaurant card clicks
+            document.addEventListener('click', function(e) {
+                // Check if a restaurant card was clicked
+                const restaurantCard = e.target.closest('.restaurant-card');
+                if (restaurantCard) {
+                    const restaurantId = restaurantCard.dataset.id;
+                    showRestaurantDetail(restaurantId);
+                }
+                
+                // Check if a pharmacy card was clicked
+                const pharmacyCard = e.target.closest('.pharmacy-card');
+                if (pharmacyCard) {
+                    const pharmacyId = pharmacyCard.dataset.id;
+                    showPharmacyDetail(pharmacyId);
+                }
+                
+                // Check if an order button was clicked
+                if (e.target.classList.contains('order-btn') && !e.target.classList.contains('add-to-cart')) {
+                    const restaurantCard = e.target.closest('.restaurant-card');
+                    const pharmacyCard = e.target.closest('.pharmacy-card');
+                    
+                    if (restaurantCard) {
+                        const restaurantId = restaurantCard.dataset.id;
+                        showRestaurantDetail(restaurantId);
+                    } else if (pharmacyCard) {
+                        const pharmacyId = pharmacyCard.dataset.id;
+                        showPharmacyDetail(pharmacyId);
+                    }
+                }
+                
+                // Check if add to cart button was clicked
+                if (e.target.classList.contains('add-to-cart')) {
+                    const itemName = e.target.dataset.name;
+                    const itemPrice = e.target.dataset.price;
+                    addToCart(itemName, itemPrice);
+                }
+                
+                // Check if a map popup button was clicked
+                if (e.target.classList.contains('popup-btn')) {
+                    if (e.target.dataset.restaurant) {
+                        showRestaurantDetail(e.target.dataset.restaurant);
+                    } else if (e.target.dataset.pharmacy) {
+                        showPharmacyDetail(e.target.dataset.pharmacy);
+                    } else if (e.target.dataset.location) {
+                        alert(`Showing delivery options for ${e.target.dataset.location}`);
+                    }
+                }
+                
+                // Check if remove from cart button was clicked
+                if (e.target.closest('.cart-item-remove')) {
+                    const index = parseInt(e.target.closest('.cart-item-remove').dataset.index);
+                    removeFromCart(index);
+                }
+            });
+            
+            // Back to restaurants button
+            backToRestaurants.addEventListener('click', function() {
+                showMainContent();
+            });
+            
+            // Back to pharmacies button
+            backToPharmacies.addEventListener('click', function() {
+                showMainContent();
+            });
+            
+            // Map view buttons
+            satelliteViewBtn.addEventListener('click', function() {
+                if (currentLayer !== 'satellite') {
+                    map.removeLayer(streetLayer);
+                    satelliteLayer.addTo(map);
+                    currentLayer = 'satellite';
+                }
+            });
+            
+            streetViewBtn.addEventListener('click', function() {
+                if (currentLayer !== 'street') {
+                    map.removeLayer(satelliteLayer);
+                    streetLayer.addTo(map);
+                    currentLayer = 'street';
+                }
+            });
+            
+            // Cart icon click
+            cartIcon.addEventListener('click', function() {
+                updateCartModal();
+                cartModal.style.display = 'flex';
+            });
+            
+            // Continue shopping button
+            continueShoppingBtn.addEventListener('click', function() {
+                cartModal.style.display = 'none';
+            });
+            
+            // Place order button
+            placeOrderBtn.addEventListener('click', placeOrder);
+        });
+    </script>
+</body>
+</html>
